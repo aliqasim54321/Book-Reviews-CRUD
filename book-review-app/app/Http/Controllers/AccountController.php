@@ -31,7 +31,7 @@ class AccountController extends Controller
 
         //Now register User
 
-        $user =new user();
+        $user =new User();
         $user->name = $request->name;
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
@@ -80,13 +80,13 @@ class AccountController extends Controller
         ];
 
         if(!empty($request->image)){
-            $rules['image'] = 'image';
+            $rules['image'] = 'image|mimes:jpeg,png,jpg,gif,svg';
         }
 
         $validator = Validator::make($request->all(), $rules);
 
         if($validator->fails()) {
-            return redirect()->route('account.profile')->withInput()->withErrors('$validator');
+            return redirect()->route('account.profile')->withInput()->withErrors($validator);
         }
 
         $user = User::find(Auth::user()->id);
@@ -96,10 +96,10 @@ class AccountController extends Controller
 
 
         if(!empty($request->image)){
-
-            File::delete('uploads/profile/'.$user->image);
-            File::delete('uploads/profile/thumb/'.$user->image);
-
+            if(!empty($user->image)){
+                File::delete('uploads/profile/'.$user->image);
+                File::delete('uploads/profile/thumb/'.$user->image);
+            }
 
             $image = $request->image;
             $ext = $image->getClientOriginalExtension();
@@ -111,8 +111,8 @@ class AccountController extends Controller
             $manager = new ImageManager(Driver::class);
             $img = $manager->read(public_path('uploads/profile/'.$imageName));
 
-            $img->cover(600, 360);
-            $img->save(public_path('uploads/profile/thumb'.$imageName));
+            $img->cover(150, 150);
+            $img->save(public_path('uploads/profile/thumb/'.$imageName));
         }
 
         return redirect()->route('account.profile')->with('success', 'Profile Updated Successfully.');
