@@ -72,17 +72,81 @@ class BookController extends Controller
 }
 
     //this method will show edit book page
-    public function edit(){
-
+    public function edit($id){
+        $book = Book::findOrFail($id);
+        
+       return view('books.edit',[
+        'book' => $book
+       ]);
     }
 
     //this method will update a book
-    public function update(){
+    public function update($id,Request $request){
+        $book = Book::findOrFail($id);
+        $rules = [
+            'title' => 'required|min:5',
+            'author' => 'required|min:3',
+            'status' => 'required',
+        ];
+        
+         if(!empty($request->image)){
+            $rules['image'] = 'image';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+  
+        if ($validator->fails()){
+        return redirect()->route('books.edit',$book->id)->withInput()->withErrors($validator);
+
+    }
+    //update book in db;
+    $book->title = $request->title;
+    $book->author = $request->author;
+    $book->description = $request->description;
+    $book->status = $request->status;
+    $book->save();
+
+    //update book image
+
+    if(!empty($request->image)){
+        //this will delete old book from books directory
+        File::delete(public_path('uploads/books/'.$book->image));
+        $image = $request->image;
+        $ext = $image->getClientOriginalExtension();
+        $imageName = time().'.'.$ext;
+        $image->move(public_path('uploads/books'), $imageName);
+
+        $book->image = $request->imageName;
+        $book->save();
+
+        
+
+    }
+    
+    return redirect()->route('books.index')->with('success', 'Book updated successfully.');
 
     }
 
     //this method will delete a book from database
-    public function destroy(){
+    public function destroy(Request $request) {
+        $book = Book::find($request->id);
+        if($book == null){
+            session()->flash('error','Book not found');
+            return response()->json([
+                'status' => false,
+                'message' => 'Book not found'
+            ]);
+        } else {
+            File::delete(public_path('uploads/books/'.$book->image));
+            $book->delete();
+
+            session()->flash('sucess','Book deleted successfully');
+            return response()->json([
+                'status' => true,
+                'message'=> 'Book deleted successfully'
+            ]);
+        }
+
 
     }
 }
