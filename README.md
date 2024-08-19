@@ -4,6 +4,11 @@
 
 Our group developed a book review app using Laravel, designed to provide a platform for book enthusiasts to share their thoughts on the books they've read. The app categorizes users into two types: normal users, who can submit and manage their reviews, and admins, who have the additional capability to view user details, manage all books, and oversee the reviews submitted by users. 
 
+## Admin Credentials
+
+### email: user@gmail.com
+### password: adminuser
+
 ## Features and Database Schema
 
 ### Features
